@@ -1,9 +1,11 @@
+import os
+import torch
 import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader, TensorDataset
+from torchvision import models
 
-class CustomCNN(nn.Module):
-    def __init__(self):
-        super(CustomCNN, self).__init__()
-        pass
+model = models.resnet18(num_classes=10)
 
-    def forward(self, x):
-        return x
