@@ -36,6 +36,7 @@ print("Model successfully loaded locally!")
 # Initialize the attack objects
 atk_fgsm = torchattacks.FGSM(model, eps=eps)
 atk_pgd = torchattacks.PGD(model, eps=eps, alpha=alpha, steps=steps)
+autoattack = torchattacks.AutoAttack(model, norm='Linf', eps=8/255, version='standard')
 
 # 2. Evaluation Function
 def evaluate_robustness(model, data_loader):
@@ -43,6 +44,7 @@ def evaluate_robustness(model, data_loader):
     clean_correct = 0
     fgsm_correct = 0
     pgd_correct = 0
+    aut_correct = 0
     total = 0
 
     for images, labels in data_loader:
@@ -65,9 +67,16 @@ def evaluate_robustness(model, data_loader):
         _, predicted_pgd = torch.max(outputs_pgd.data, 1)
         pgd_correct += (predicted_pgd == labels).sum().item()
 
+        # Auto Attack
+        adv_images_aut = autoattack(images, labels)
+        outputs_aut = model(adv_images_aut)
+        _, predicted_aut = torch.max(outputs_aut.data, 1)
+        aut_correct += (predicted_aut == labels).sum().item()
+
     print(f"Clean Accuracy: {100 * clean_correct / total:.2f}%")
     print(f"FGSM Accuracy: {100 * fgsm_correct / total:.2f}%")
     print(f"PGD Accuracy: {100 * pgd_correct / total:.2f}%")
+    print(f"Auto Attack Accuracy: {100 * aut_correct / total:.2f}%")
 
 # Run the benchmark
 evaluate_robustness(model, test_loader)
